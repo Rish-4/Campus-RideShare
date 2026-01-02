@@ -1,0 +1,16 @@
+# ===== Backend =====
+GRide-backend/node_modules/
+GRide-backend/.env
+
+# ===== Android =====
+GRide-Android/.gradle/
+GRide-Android/local.properties
+GRide-Android/**/build/
+GRide-Android/.idea/
+*.keystore
+
+# ===== OS / Misc =====
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-error.log*
