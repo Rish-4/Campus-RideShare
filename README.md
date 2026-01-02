@@ -1,42 +1,61 @@
----
+
 
 # 🚕 GRide – Campus Ride Sharing App
 
-GRide is a **campus-based ride sharing application** inspired by services like Uber/Ola, designed specifically for university campuses.
-It supports **User (Passenger)** and **Driver** roles, ride booking, payments, ride history, and driver ride acceptance.
+**GRide** is a **campus-focused ride-sharing application** inspired by platforms like Uber and Ola, designed specifically for **university campuses**.
+It enables safe, controlled ride sharing within campus boundaries and supports **Passenger (User)** and **Driver** roles with real-time ride workflows.
+
+The project is built as a **full-stack system** with an **Android frontend** and a **Node.js + MySQL backend**.
 
 ---
 
-## 📌 Features
+## 📌 Key Highlights
+
+* Campus rule enforcement (pickup or drop must lie within campus)
+* Role-based authentication (User / Driver)
+* JWT-secured APIs
+* Map-based location selection
+* Payment workflow simulation
+* Clean separation of frontend and backend
+
+---
+
+## ✨ Features
 
 ### 👤 User (Passenger)
 
-* Register & Login (JWT based authentication)
-* Select **pickup & drop locations** on map
-* Campus rule enforced (either pickup or drop must be inside campus)
-* Fare & distance calculation
+* Register & Login (**JWT-based authentication**)
+* Select **pickup & drop locations** using Google Maps
+* Campus boundary validation
+* Automatic **distance & fare calculation**
 * Ride confirmation screen
-* Payment options:
+* Multiple payment options:
 
-  * UPI (intent based)
-  * Wallet (mock)
+  * UPI (Intent-based)
+  * Wallet (mock implementation)
   * Cash
-* Ride status updates (REQUESTED → PAID → COMPLETED)
-* Ride history
+* Ride lifecycle tracking:
+
+  ```
+  REQUESTED → PAID → COMPLETED
+  ```
+* View complete ride history
+
+---
 
 ### 🚗 Driver
 
-* Login as DRIVER role
-* View **Available Rides**
-* See:
+* Login using **DRIVER role**
+* View **available ride requests**
+* See detailed ride info:
 
   * Pickup address
   * Drop address
   * Distance
   * Fare
 * Accept rides
-* Complete rides
-* Logout
+* Mark rides as completed
+* Logout functionality
 
 ---
 
@@ -44,49 +63,56 @@ It supports **User (Passenger)** and **Driver** roles, ride booking, payments, r
 
 ### 📱 Android Frontend
 
-* Language: **Java**
-* UI: XML (Activities)
-* Maps: Google Maps SDK
-* Networking: **Retrofit**
-* Auth storage: **SharedPreferences**
-* Location: FusedLocationProviderClient
+* **Language:** Java
+* **UI:** XML (Activity-based architecture)
+* **Maps:** Google Maps SDK for Android
+* **Networking:** Retrofit
+* **Authentication Storage:** SharedPreferences
+* **Location Services:** FusedLocationProviderClient
+* **Minimum SDK:** 24
+* **Target SDK:** 36
+
+---
 
 ### 🌐 Backend
 
-* Runtime: **Node.js**
-* Framework: **Express**
-* Database: **MySQL**
-* Auth: **JWT**
-* Password hashing: **bcrypt**
-* ORM: Raw SQL (mysql2)
+* **Runtime:** Node.js
+* **Framework:** Express.js
+* **Database:** MySQL
+* **Authentication:** JWT
+* **Password Hashing:** bcrypt
+* **Database Access:** Raw SQL using `mysql2`
+* **Environment Config:** dotenv
 
 ---
 
 ## 📂 Project Structure
 
-### Android
+### 📱 Android (`GRide-Android`)
 
 ```
 app/
  ├── activities/
- │    ├── LoginActivity
- │    ├── RegisterActivity
- │    ├── HomeActivity
- │    ├── RideConfirmActivity
- │    ├── PaymentActivity
- │    ├── RideStatusActivity
- │    ├── AvailableRidesActivity
- │    └── DriverHomeActivity
+ │    ├── LoginActivity.java
+ │    ├── RegisterActivity.java
+ │    ├── HomeActivity.java
+ │    ├── RideConfirmActivity.java
+ │    ├── PaymentActivity.java
+ │    ├── RideStatusActivity.java
+ │    ├── AvailableRidesActivity.java
+ │    └── DriverHomeActivity.java
  ├── network/
- │    ├── ApiClient
- │    └── ApiService
+ │    ├── ApiClient.java
+ │    └── ApiService.java
  └── res/
       ├── layout/
       ├── menu/
       └── values/
 ```
 
-### Backend
+---
+
+### 🌐 Backend (`GRide-backend`)
 
 ```
 gride-backend/
@@ -101,7 +127,7 @@ gride-backend/
  ├── config/
  │    └── db.js
  ├── server.js
- └── .env
+ └── .env   (ignored in Git)
 ```
 
 ---
@@ -115,6 +141,8 @@ CREATE DATABASE gride_db;
 USE gride_db;
 ```
 
+---
+
 ### 2️⃣ Users Table
 
 ```sql
@@ -127,6 +155,8 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+---
 
 ### 3️⃣ Rides Table
 
@@ -158,6 +188,8 @@ CREATE TABLE rides (
 npm install
 ```
 
+---
+
 ### 2️⃣ Environment Variables (`.env`)
 
 ```env
@@ -169,13 +201,17 @@ DB_NAME=gride_db
 JWT_SECRET=super_secret_key
 ```
 
-### 3️⃣ Start Server
+> ⚠️ `.env` is intentionally **excluded from GitHub** for security.
+
+---
+
+### 3️⃣ Start Backend Server
 
 ```bash
 npx nodemon server.js
 ```
 
-Server runs on:
+Server runs at:
 
 ```
 http://localhost:5000
@@ -185,23 +221,25 @@ http://localhost:5000
 
 ## 🔗 API Endpoints
 
-### 🔑 Auth
+### 🔑 Authentication
 
 | Method | Endpoint           | Description   |
 | ------ | ------------------ | ------------- |
 | POST   | /api/auth/register | Register user |
 | POST   | /api/auth/login    | Login user    |
 
-### 🚕 Rides
+---
 
-| Method | Endpoint              | Description            |
-| ------ | --------------------- | ---------------------- |
-| POST   | /api/rides/create     | Create ride            |
-| GET    | /api/rides/my         | User ride history      |
-| GET    | /api/rides/available  | Driver available rides |
-| PATCH  | /api/rides/:id/status | Update ride status     |
+### 🚕 Ride Management
 
-> All protected routes require:
+| Method | Endpoint              | Description                |
+| ------ | --------------------- | -------------------------- |
+| POST   | /api/rides/create     | Create new ride            |
+| GET    | /api/rides/my         | User ride history          |
+| GET    | /api/rides/available  | Available rides for driver |
+| PATCH  | /api/rides/:id/status | Update ride status         |
+
+🔒 **Protected Routes Require Header:**
 
 ```
 Authorization: Bearer <JWT_TOKEN>
@@ -211,20 +249,24 @@ Authorization: Bearer <JWT_TOKEN>
 
 ## 📱 Android Setup
 
-### 1️⃣ Clone Project
+### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/your-username/GRide.git
+git clone https://github.com/your-username/GRIDE.git
 ```
+
+---
 
 ### 2️⃣ Open in Android Studio
 
-* **Build system**: Groovy DSL
-* **Language**: Java
-* **Minimum SDK**: 24
-* **Target SDK**: 36
+* **Build System:** Gradle (Groovy DSL)
+* **Language:** Java
+* **Minimum SDK:** 24
+* **Target SDK:** 36
 
-### 3️⃣ API Base URL
+---
+
+### 3️⃣ Backend Base URL
 
 In `ApiClient.java`:
 
@@ -232,7 +274,7 @@ In `ApiClient.java`:
 .baseUrl("http://10.0.2.2:5000/")
 ```
 
-> For physical device, replace with your local IP:
+> For a physical device, use your system’s local IP:
 
 ```java
 http://192.168.x.x:5000/
@@ -240,21 +282,22 @@ http://192.168.x.x:5000/
 
 ---
 
-## 🗺️ Google Maps Setup
+## 🗺️ Google Maps Setup (Secure)
 
-### Required APIs
+### Required API
 
-* Maps SDK for Android
+* **Maps SDK for Android**
 
-> ❗ Directions API (Polyline) is skipped due to billing limitations.
+> ❗ Directions API / Polylines are excluded due to billing limitations.
 
-### Add API Key
+### API Key Handling
 
-`res/values/google_maps_api.xml`
+* API key is **not hardcoded**
+* Loaded securely via `local.properties`
+* Injected at build time using Gradle
+* Excluded from GitHub using `.gitignore`
 
-```xml
-<string name="google_maps_key">YOUR_API_KEY</string>
-```
+✔ Safe for public repositories
 
 ---
 
@@ -262,37 +305,35 @@ http://192.168.x.x:5000/
 
 1. User logs in
 2. Backend validates credentials
-3. JWT token returned
+3. JWT token is returned
 4. Token stored in SharedPreferences
-5. App decides screen:
+5. Role-based navigation:
 
-   * USER → HomeActivity
-   * DRIVER → DriverHomeActivity
+   * **USER → HomeActivity**
+   * **DRIVER → DriverHomeActivity**
 
 ---
 
-## ✅ Current Status
+## 📌 Current Status
 
-✔ Login / Register
-✔ JWT authentication
-✔ User & Driver roles
-✔ Ride booking
-✔ Payment handling
+✔ User & Driver authentication
+✔ JWT-secured APIs
+✔ Ride creation & lifecycle
+✔ Payment flow (mock + UPI intent)
 ✔ Ride history
-✔ Driver available rides
-✔ Ride acceptance
-✔ Ride completion
+✔ Driver ride acceptance
+✔ Ride completion logic
 
 ---
 
 ## 🚀 Future Enhancements
 
-* Google Directions polyline (billing enabled)
+* Google Directions API (Polyline support)
 * Live driver tracking
-* Push notifications
+* Push notifications (FCM)
 * Driver earnings dashboard
 * Admin panel
-* Wallet system
+* Digital wallet system
 
 ---
 
@@ -301,5 +342,3 @@ http://192.168.x.x:5000/
 **Rishabh**
 MCA | Full-Stack Developer
 Android • Node.js • MySQL
-
----
