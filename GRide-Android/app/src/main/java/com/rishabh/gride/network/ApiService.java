@@ -12,6 +12,7 @@ import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 
 public interface ApiService {
@@ -49,4 +50,12 @@ public interface ApiService {
             @Path("id") int rideId
     );
 
+    @GET("api/route")
+    Call<Map<String, Object>> getRoute(
+            @Header("authorization") String token,
+            @Query("startLat") double startLat,
+            @Query("startLng") double startLng,
+            @Query("endLat") double endLat,
+            @Query("endLng") double endLng
+    );
 }

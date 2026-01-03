@@ -15,6 +15,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -29,8 +30,13 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.rishabh.gride.network.ApiClient;
+import com.rishabh.gride.network.ApiService;
+
 import android.os.AsyncTask;
 
 
@@ -44,7 +50,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-
+import com.google.maps.android.PolyUtil;
 
 
 /**
@@ -63,8 +69,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Google Map instance
     private GoogleMap mMap;
 
-    // UI elements
-    private Button btnBookRide;
+    // polyline for route
+    private Polyline routePolyline;
 
     // Stores selected pickup & drop coordinates
     private LatLng pickupLatLng = null;
@@ -119,7 +125,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Initialize UI
-        btnBookRide = findViewById(R.id.btnBookRide);
+        // UI elements
+        Button btnBookRide = findViewById(R.id.btnBookRide);
 
         // Load Google Map fragment
         SupportMapFragment mapFragment =
@@ -137,10 +144,12 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Called when Google Map is ready to use
      */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
 
+
+    @Override
+     public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        
         // Enable blue dot for user's current location
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -172,8 +181,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 .position(latLng)
                                 .title("Drop Location")
                 );
-                // DRAW ROUTE HERE
-                drawRoute(pickupLatLng, dropLatLng);
+                // DRAW ROUTE AFTER BOTH POINTS ARE SET
+                drawRouteFromBackend(pickupLatLng, dropLatLng);
             }
 
             else {
@@ -191,19 +200,62 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void drawRoute(LatLng origin, LatLng destination) {
+    private void drawRouteFromBackend(LatLng pickup, LatLng drop) {
+        String token = getSharedPreferences("AUTH", MODE_PRIVATE)
+                .getString("TOKEN", null);
 
-        Log.d("ROUTE", "drawRoute called");
+        if (token == null) return;
 
-        String apiKey = getString(R.string.google_maps_key);
+        ApiService api = ApiClient.getClient().create(ApiService.class);
 
-        String url = "https://maps.googleapis.com/maps/api/directions/json"
-                + "?origin=" + origin.latitude + "," + origin.longitude
-                + "&destination=" + destination.latitude + "," + destination.longitude
-                + "&mode=driving"
-                + "&key=" + apiKey;
+        api.getRoute(
+                token,
+                pickup.latitude,
+                pickup.longitude,
+                drop.latitude,
+                drop.longitude
+        ).enqueue(new retrofit2.Callback<>() {
 
-        new FetchRouteTask().execute(url);
+            @Override
+            public void onResponse(
+                    retrofit2.Call<java.util.Map<String, Object>> call,
+                    retrofit2.Response<java.util.Map<String, Object>> response) {
+
+                Log.d("ROUTE_DEBUG", "Backend response received: " + response.body());
+                if (!response.isSuccessful() || response.body() == null) return;
+
+                // ✅ Get encoded polyline string from backend
+                String encodedPolyline =
+                        response.body().get("polyline").toString();
+
+                // ✅ Decode polyline into LatLng points
+                List<LatLng> points =
+                        PolyUtil.decode(encodedPolyline);
+
+                // Remove old route if exists
+                if (routePolyline != null) {
+                    routePolyline.remove();
+                }
+
+                // Draw new blue route
+                routePolyline = mMap.addPolyline(
+                        new PolylineOptions()
+                                .addAll(points)
+                                .color(Color.parseColor("#1976D2"))
+                                .width(12f)
+                                .startCap(new RoundCap())
+                                .endCap(new RoundCap())
+                                .jointType(JointType.ROUND)
+                );
+            }
+
+            @Override
+            public void onFailure(
+                    retrofit2.Call<java.util.Map<String, Object>> call,
+                    Throwable t) {
+                t.printStackTrace();
+            }
+        });
     }
 
     /**

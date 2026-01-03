@@ -6,6 +6,7 @@ const cors = require("cors");
 // Import routes
 const authRoutes = require("./routes/authRoutes");
 const rideRoutes = require("./routes/rideRoutes");
+const routeRoutes = require("./routes/routeRoutes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/rides", rideRoutes);
+app.use("/api", routeRoutes);
 
 // Start server
 const PORT = 5000;
