@@ -36,14 +36,18 @@
             android:id="@+id/etPickup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Pickup location"/>
+            android:hint="Pickup location"
+            android:imeOptions="actionSearch"
+            android:inputType="text"/>
 
         <EditText
             android:id="@+id/etDrop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Drop location"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:imeOptions="actionSearch"
+            android:inputType="text"/>
 
         <TextView
             android:layout_width="wrap_content"

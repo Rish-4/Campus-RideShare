@@ -8,56 +8,76 @@ const jwt = require("jsonwebtoken");
  * Creates a new user with hashed password
  */
 exports.register = (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    console.log("BODY:", req.body);
 
-  // Validate input
-  if (!name || !email || !password) {
-    return res.status(400).json({
-      message: "All fields are required"
-    });
-  }
+    const { name, email, password, role } = req.body;
 
-  // Check if user already exists
-  const checkSql = "SELECT id FROM users WHERE email = ?";
-  db.query(checkSql, [email], (err, result) => {
-    if (err) {
-      return res.status(500).json(err);
-    }
-
-    if (result.length > 0) {
-      return res.status(409).json({
-        message: "User already exists"
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
       });
     }
 
-    // Hash password
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const userRole = role || "USER";
 
-    // Insert new user
-    const insertSql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+    console.log("EMAIL:", email);
+    console.log("ROLE:", userRole);
 
-    db.query(insertSql, [name, email, hashedPassword], (err) => {
+    // Check if user already exists
+    const checkSql = "SELECT id FROM users WHERE email = ?";
+
+    db.query(checkSql, [email], (err, result) => {
       if (err) {
-
-        // Handle duplicate email
-        if (err.code === "ER_DUP_ENTRY") {
-          return res.status(409).json({
-            message: "Email already registered"
-          });
-        }
-
-        // Other DB errors
+        console.log("DB CHECK ERROR:", err);
         return res.status(500).json({
-          message: "Database error",
-          error: err
+          message: "Database error"
         });
       }
 
-      res.status(201).json({
-        message: "User registered successfully"
+      console.log("CHECK RESULT:", result);
+
+      // Only block if actual match found
+      if (Array.isArray(result) && result.length > 0) {
+        return res.status(409).json({
+          message: "Email already registered"
+        });
+      }
+
+      // Hash password safely
+      const hashedPassword = bcrypt.hashSync(password, 10);
+
+      // Insert new user
+      const insertSql = `
+        INSERT INTO users (name, email, password, role)
+        VALUES (?, ?, ?, ?)
+      `;
+
+      db.query(insertSql, [name, email, hashedPassword, userRole], (err, result) => {
+        if (err) {
+          console.log("INSERT ERROR:", err);
+
+          return res.status(500).json({
+            message: "Failed to register user"
+          });
+        }
+
+        console.log("USER INSERTED:", result);
+
+        return res.status(201).json({
+          message: "User registered successfully"
+        });
       });
     });
-  });
+
+  } catch (error) {
+    console.log("SERVER ERROR:", error);
+
+    return res.status(500).json({
+      message: "Server error"
+    });
+  }
 };
 
 /**

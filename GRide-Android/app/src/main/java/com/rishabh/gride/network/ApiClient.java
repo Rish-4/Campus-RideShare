@@ -10,7 +10,7 @@ public class ApiClient {
     public static Retrofit getClient() {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
-                    .baseUrl("http://192.168.29.216:5000/")
+                    .baseUrl("https://earthworm-boogieman-erupt.ngrok-free.dev/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }

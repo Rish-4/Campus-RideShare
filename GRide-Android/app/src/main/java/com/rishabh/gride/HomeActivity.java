@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -52,6 +54,9 @@ import java.util.List;
 
 import com.google.maps.android.PolyUtil;
 
+import android.location.Geocoder;
+import android.location.Address;
+import java.io.IOException;
 
 /**
  * HomeActivity
@@ -65,6 +70,9 @@ import com.google.maps.android.PolyUtil;
  * - Zoom to current user location
  */
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback {
+
+    // Input fields for searching pickup and drop locations
+    private EditText etPickup, etDrop;
 
     // Google Map instance
     private GoogleMap mMap;
@@ -117,6 +125,10 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         setContentView(R.layout.activity_home);
+
+
+        etPickup = findViewById(R.id.etPickup);
+        etDrop = findViewById(R.id.etDrop);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -171,7 +183,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 searchLocation(etPickup.getText().toString(), true);
             }
         });
-        
+
         // Same fallback mechanism for drop field
         etDrop.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
@@ -180,13 +192,9 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    /**
-     * Called when Google Map is ready to use
-     */
-
-
+    //Called when Google Map is ready to use
     @Override
-     public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         
         // Enable blue dot for user's current location
@@ -406,9 +414,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    /**
-     * Checks whether a location lies inside campus radius
-     */
+    //Checks whether a location lies inside campus radius
     private boolean isInsideCampus(LatLng location) {
         float[] result = new float[1];
 
@@ -423,9 +429,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         return result[0] <= CAMPUS_RADIUS;
     }
 
-    /**
-     * Calculates distance between pickup & drop in kilometers
-     */
+    //Calculates distance between pickup & drop in kilometers
     private float calculateDistanceKm(LatLng start, LatLng end) {
         float[] result = new float[1];
 
@@ -440,9 +444,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         return result[0] / 1000; // meters → km
     }
 
-    /**
-     * Calculates fare based on distance
-     */
+    //Calculates fare based on distance
     private int calculateFare(float distanceKm) {
         return BASE_FARE + Math.round(distanceKm * PER_KM_RATE);
     }
@@ -577,6 +579,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void searchLocation(String locationName, boolean isPickup) {
+
         if (locationName.isEmpty()) {
             toast("Enter location");
             return;

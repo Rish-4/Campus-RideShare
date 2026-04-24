@@ -3,6 +3,7 @@ package com.rishabh.gride;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +25,8 @@ public class RegisterActivity extends AppCompatActivity {
     Button btnRegister;
     TextView tvLogin;
 
+    RadioButton radioUser, radioDriver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +39,9 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
 
+        radioUser = findViewById(R.id.radioUser);
+        radioDriver = findViewById(R.id.radioDriver);
+
         btnRegister.setOnClickListener(v -> registerUser());
         tvLogin.setOnClickListener(v -> finish());
     }
@@ -45,6 +51,16 @@ public class RegisterActivity extends AppCompatActivity {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
+
+        String role;
+
+        if (radioDriver.isChecked()) {
+            role = "DRIVER";
+        } else {
+            role = "USER"; // default
+        }
+
+
 
         if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this,
@@ -59,6 +75,8 @@ public class RegisterActivity extends AppCompatActivity {
         body.put("name", name);
         body.put("email", email);
         body.put("password", password);
+        body.put("role", role);
+
 
         api.register(body).enqueue(new Callback<Map<String, String>>() {
 

@@ -41,6 +41,28 @@
             android:inputType="phone"
             android:layout_marginBottom="12dp"/>
 
+        <RadioGroup
+            android:id="@+id/roleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <RadioButton
+                android:id="@+id/radioUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User" />
+
+            <RadioButton
+                android:id="@+id/radioDriver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Driver"
+                android:layout_marginStart="20dp" />
+
+        </RadioGroup>
+
         <EditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
