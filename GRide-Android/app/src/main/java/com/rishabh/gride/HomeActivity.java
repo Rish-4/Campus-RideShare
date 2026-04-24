@@ -139,6 +139,45 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Handle "Book Ride" button click
         btnBookRide.setOnClickListener(v -> handleBookRide());
+
+        // Trigger search when user taps on pickup field (quick manual trigger)
+        etPickup.setOnClickListener(v -> {
+            searchLocation(etPickup.getText().toString(), true);
+        });
+
+        // Trigger search when user presses the "Search" button on keyboard (IME action)
+        // This makes the input behave like a real search bar
+        etPickup.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                searchLocation(etPickup.getText().toString(), true);
+                return true;
+            }
+            return false;
+        });
+
+        // Same keyboard search functionality for drop location
+        etDrop.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                searchLocation(etDrop.getText().toString(), false);
+                return true;
+            }
+            return false;
+        });
+
+        // Trigger search when pickup field loses focus
+        // (fallback mechanism in case user doesn’t press search button)
+        etPickup.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                searchLocation(etPickup.getText().toString(), true);
+            }
+        });
+        
+        // Same fallback mechanism for drop field
+        etDrop.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                searchLocation(etDrop.getText().toString(), false);
+            }
+        });
     }
 
     /**
