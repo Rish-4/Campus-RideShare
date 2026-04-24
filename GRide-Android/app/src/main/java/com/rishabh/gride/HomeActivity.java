@@ -576,4 +576,63 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         return poly;
     }
 
+    private void searchLocation(String locationName, boolean isPickup) {
+        if (locationName.isEmpty()) {
+            toast("Enter location");
+            return;
+        }
+
+        Geocoder geocoder = new Geocoder(this);
+        List<Address> addressList;
+
+        try {
+            addressList = geocoder.getFromLocationName(locationName, 1);
+
+            if (addressList != null && !addressList.isEmpty()) {
+
+                Address address = addressList.get(0);
+                LatLng latLng = new LatLng(
+                        address.getLatitude(),
+                        address.getLongitude()
+                );
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f));
+
+                if (isPickup) {
+                    pickupLatLng = latLng;
+
+                    if (pickupMarker != null) pickupMarker.remove();
+
+                    pickupMarker = mMap.addMarker(
+                            new MarkerOptions()
+                                    .position(latLng)
+                                    .title("Pickup Location")
+                    );
+
+                } else {
+                    dropLatLng = latLng;
+
+                    if (dropMarker != null) dropMarker.remove();
+
+                    dropMarker = mMap.addMarker(
+                            new MarkerOptions()
+                                    .position(latLng)
+                                    .title("Drop Location")
+                    );
+
+                    // 🔥 draw route when both selected
+                    if (pickupLatLng != null) {
+                        drawRouteFromBackend(pickupLatLng, dropLatLng);
+                    }
+                }
+
+            } else {
+                toast("Location not found");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
