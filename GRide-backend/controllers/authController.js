@@ -8,13 +8,15 @@ const jwt = require("jsonwebtoken");
  * Creates a new user with hashed password
  */
 exports.register = (req, res) => {
+
   try {
+
     console.log("BODY:", req.body);
 
-    const { name, email, password, role } = req.body;
+    const { name, roll_number, email, password, role } = req.body;
 
-    // Validate input
-    if (!name || !email || !password) {
+    // ✅ Validate input (UPDATED)
+    if (!name || !roll_number || !email || !password) {
       return res.status(400).json({
         message: "All fields are required"
       });
@@ -22,13 +24,14 @@ exports.register = (req, res) => {
 
     const userRole = role || "USER";
 
-    console.log("EMAIL:", email);
-    console.log("ROLE:", userRole);
+    // ✅ Check if roll number OR email already exists
+    const checkSql = `
+      SELECT id FROM users 
+      WHERE email = ? OR roll_number = ?
+    `;
 
-    // Check if user already exists
-    const checkSql = "SELECT id FROM users WHERE email = ?";
+    db.query(checkSql, [email, roll_number], (err, result) => {
 
-    db.query(checkSql, [email], (err, result) => {
       if (err) {
         console.log("DB CHECK ERROR:", err);
         return res.status(500).json({
@@ -36,42 +39,44 @@ exports.register = (req, res) => {
         });
       }
 
-      console.log("CHECK RESULT:", result);
-
-      // Only block if actual match found
-      if (Array.isArray(result) && result.length > 0) {
+      if (result.length > 0) {
         return res.status(409).json({
-          message: "Email already registered"
+          message: "Email or Roll Number already registered"
         });
       }
 
-      // Hash password safely
+      // 🔐 Hash password
       const hashedPassword = bcrypt.hashSync(password, 10);
 
-      // Insert new user
+      // ✅ Insert user
       const insertSql = `
-        INSERT INTO users (name, email, password, role)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO users (name, roll_number, email, password, role)
+        VALUES (?, ?, ?, ?, ?)
       `;
 
-      db.query(insertSql, [name, email, hashedPassword, userRole], (err, result) => {
-        if (err) {
-          console.log("INSERT ERROR:", err);
+      db.query(
+        insertSql,
+        [name, roll_number, email, hashedPassword, userRole],
+        (err, result) => {
 
-          return res.status(500).json({
-            message: "Failed to register user"
+          if (err) {
+            console.log("INSERT ERROR:", err);
+            return res.status(500).json({
+              message: "Failed to register user"
+            });
+          }
+
+          console.log("USER INSERTED:", result);
+
+          return res.status(201).json({
+            message: "User registered successfully"
           });
         }
-
-        console.log("USER INSERTED:", result);
-
-        return res.status(201).json({
-          message: "User registered successfully"
-        });
-      });
+      );
     });
 
   } catch (error) {
+
     console.log("SERVER ERROR:", error);
 
     return res.status(500).json({
@@ -86,54 +91,58 @@ exports.register = (req, res) => {
  * Verifies email & password and returns JWT token
  */
 exports.login = (req, res) => {
-  const { email, password } = req.body;
+
+  const { roll_number, password } = req.body;
 
   // Validate input
-  if (!email || !password) {
+  if (!roll_number || !password) {
     return res.status(400).json({
-      message: "Email and password are required"
+      message: "Roll number and password are required"
     });
   }
 
-  // Find user by email
-  const sql = "SELECT * FROM users WHERE email = ?";
-  db.query(sql, [email], async (err, result) => {
+  // Find user by roll number
+  const sql = "SELECT * FROM users WHERE roll_number = ?";
+
+  db.query(sql, [roll_number], async (err, result) => {
+
     if (err) {
       return res.status(500).json(err);
     }
 
     if (result.length === 0) {
       return res.status(401).json({
-        message: "Invalid email or password"
+        message: "Invalid roll number or password"
       });
     }
 
     const user = result[0];
 
-    // Compare password using bcrypt
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({
-        message: "Invalid email or password"
+        message: "Invalid roll number or password"
       });
     }
 
-    // Generate JWT token
+    // Generate token
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, roll_number: user.roll_number },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // Login success
+    // Success response
     res.json({
       message: "Login successful",
       token,
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
+        email: user.email,        // still returning email
+        roll_number: user.roll_number,
         role: user.role
       }
     });

@@ -61,6 +61,48 @@ exports.getMyRides = (req, res) => {
     res.json(rows);
   });
 };
+exports.getRideStatus = (req, res) => {
+
+  const rideId = req.params.rideId;
+
+  const sql = `
+    SELECT r.status,
+           u.name AS driver_name,
+           u.phone AS driver_phone,
+           d.vehicle_name,
+           d.vehicle_number,
+           d.avg_rating
+    FROM rides r
+    LEFT JOIN users u ON r.driver_id = u.id
+    LEFT JOIN drivers d ON d.user_id = u.id
+    WHERE r.id = ?
+  `;
+
+  db.query(sql, [rideId], (err, result) => {
+
+    if (err) {
+      console.log("STATUS ERROR:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    const ride = result[0];
+
+    // ✅ SAFE RESPONSE (no crash even if driver null)
+    res.json({
+      status: ride.status,
+      driver_name: ride.driver_name || "",
+      driver_phone: ride.driver_phone || "",
+      vehicle_name: ride.vehicle_name || "",
+      vehicle_number: ride.vehicle_number || ""
+    });
+  });
+};
+
+
 exports.updateRideStatus = (req, res) => {
   const userId = req.user.id;
   const rideId = req.params.id;
@@ -141,6 +183,110 @@ exports.acceptRide = (req, res) => {
 
     res.json({
       message: "Ride accepted successfully"
+    });
+  });
+};
+
+exports.createDriverProfile = (req, res) => {
+
+  const userId = req.user.id; // comes from auth middleware
+  const { vehicle_name, vehicle_number } = req.body;
+
+  // validation
+  if (!vehicle_name || !vehicle_number) {
+    return res.status(400).json({
+      message: "All fields are required"
+    });
+  }
+
+  const sql = `
+    INSERT INTO drivers (user_id, vehicle_name, vehicle_number)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(sql, [userId, vehicle_name, vehicle_number], (err) => {
+
+    if (err) {
+      console.log("DRIVER INSERT ERROR:", err);
+      return res.status(500).json({
+        message: "Database error"
+      });
+    }
+
+    res.json({
+      message: "Driver profile created"
+    });
+  });
+};
+
+exports.checkDriverProfile = (req, res) => {
+
+  const userId = req.user.id;
+
+  const sql = "SELECT * FROM drivers WHERE user_id = ?";
+
+  db.query(sql, [userId], (err, result) => {
+
+    if (err) {
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    if (result.length > 0) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  });
+};
+
+exports.submitReview = (req, res) => {
+
+  const rideId = req.params.id;
+  const { rating, review } = req.body;
+
+  // 1️⃣ Save review in rides
+  const updateRideSql = `
+    UPDATE rides 
+    SET rating = ?, review = ?, status = 'COMPLETED'
+    WHERE id = ?
+  `;
+
+  db.query(updateRideSql, [rating, review, rideId], (err) => {
+
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Error saving review" });
+    }
+
+    // 2️⃣ Get driver_id from ride
+    const getDriverSql = `SELECT driver_id FROM rides WHERE id = ?`;
+
+    db.query(getDriverSql, [rideId], (err, result) => {
+
+      if (err || result.length === 0) {
+        return res.status(500).json({ message: "Driver not found" });
+      }
+
+      const driverId = result[0].driver_id;
+
+      // 3️⃣ Update driver rating
+      const updateDriverSql = `
+        UPDATE drivers
+        SET total_rating = total_rating + ?,
+            rating_count = rating_count + 1,
+            avg_rating = (total_rating + ?) / (rating_count + 1)
+        WHERE user_id = ?
+      `;
+
+      db.query(updateDriverSql, [rating, rating, driverId], (err) => {
+
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Error updating driver rating" });
+        }
+
+        res.json({ message: "Review submitted successfully" });
+      });
     });
   });
 };

@@ -40,6 +40,7 @@ public class PaymentActivity extends AppCompatActivity {
 
     int rideId;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +98,7 @@ public class PaymentActivity extends AppCompatActivity {
 
         markRideAsPaid(rideId);
         // Navigate to Ride Status screen
-        Intent intent = new Intent(this, RideStatusActivity.class);
+        Intent intent = new Intent(this, CompletionActivity.class);
         intent.putExtra("rideId", rideId);   //  REQUIRED
         startActivity(intent);
 
@@ -146,7 +147,7 @@ public class PaymentActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
 
                         markRideAsPaid(rideId);
-                        Intent intent = new Intent(this, RideStatusActivity.class);
+                        Intent intent = new Intent(this, CompletionActivity.class);
                         intent.putExtra("rideId", rideId);   //  REQUIRED
                         startActivity(intent);
                         finish();

@@ -2,23 +2,90 @@ package com.rishabh.gride;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import android.os.Handler;
+import android.content.Intent;
+import android.widget.Toast;
+
+import com.rishabh.gride.network.ApiClient;
+import com.rishabh.gride.network.ApiService;
+
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class WaitingActivity extends AppCompatActivity {
+
+    private int rideId;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_waiting);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        rideId = getIntent().getIntExtra("rideId", -1);
+
+        startPolling();
+    }
+    private void checkRideStatus() {
+
+        android.util.Log.d("WAIT", "Checking status... RideId = " + rideId);
+        String token = getSharedPreferences("AUTH", MODE_PRIVATE)
+                .getString("TOKEN", null);
+
+        ApiService api = ApiClient.getClient().create(ApiService.class);
+
+        api.getRideStatus(token, rideId).enqueue(new Callback<Map<String, Object>>() {
+
+            @Override
+            public void onResponse(Call<Map<String, Object>> call,
+                                   Response<Map<String, Object>> response) {
+
+                android.util.Log.d("WAIT", "Code = " + response.code());
+                android.util.Log.d("WAIT", "Body = " + response.body());
+                if (response.isSuccessful() && response.body() != null) {
+
+                    String status = response.body().get("status").toString();
+
+                    if (status.equals("ACCEPTED")) {
+
+                        handler.removeCallbacksAndMessages(null); // STOP polling
+
+                        Toast.makeText(WaitingActivity.this,
+                                "Driver found!", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(
+                                WaitingActivity.this,
+                                RideStatusActivity.class
+                        );
+
+                        intent.putExtra("rideId", rideId);
+                        intent.putExtra("fare", getIntent().getIntExtra("fare", 0));
+
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                android.util.Log.e("WAIT", "Error = " + t.getMessage());
+                t.printStackTrace();
+            }
         });
+    }
+
+    private void startPolling() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                checkRideStatus();
+                handler.postDelayed(this, 3000); // every 3 sec
+            }
+        }, 3000);
     }
 }

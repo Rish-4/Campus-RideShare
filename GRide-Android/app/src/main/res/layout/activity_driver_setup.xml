@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Driver Setup"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp"/>
+
+    <EditText
+        android:id="@+id/etVehicleName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Vehicle Name (e.g. Swift)"
+        android:layout_marginBottom="10dp"/>
+
+    <EditText
+        android:id="@+id/etVehicleNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Vehicle Number (e.g. DL01AB1234)"
+        android:layout_marginBottom="20dp"/>
+
+    <Button
+        android:id="@+id/btnSaveVehicle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save and Continue"/>
+
+</LinearLayout>

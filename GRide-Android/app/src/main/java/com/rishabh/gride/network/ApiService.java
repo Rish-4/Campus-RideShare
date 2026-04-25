@@ -29,6 +29,12 @@ public interface ApiService {
     @GET("api/rides/my")
     Call<List<Ride>> getMyRides(@Header("authorization") String token);
 
+    @GET("api/rides/status/{rideId}")
+    Call<Map<String, Object>> getRideStatus(
+            @Header("Authorization") String token,
+            @Path("rideId") int rideId
+    );
+
     @PATCH("api/rides/{id}/status")
     Call<Map<String, String>> updateRideStatus(
             @Header("authorization") String token,
@@ -48,6 +54,24 @@ public interface ApiService {
     Call<Map<String, String>> acceptRide(
             @Header("authorization") String token,
             @Path("id") int rideId
+    );
+
+    @POST("api/rides/driver/create")
+    Call<Map<String, String>> createDriverProfile(
+            @Header("Authorization") String token,
+            @Body Map<String, String> body
+    );
+
+    @GET("api/rides/driver/check")
+    Call<Map<String, Boolean>> checkDriverProfile(
+            @Header("Authorization") String token
+    );
+
+    @PATCH("api/rides/review/{id}")
+    Call<Map<String, String>> submitReview(
+            @Header("Authorization") String token,
+            @Path("id") int rideId,
+            @Body Map<String, Object> body
     );
 
     @GET("api/route")

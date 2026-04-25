@@ -21,26 +21,27 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    EditText etName, etEmail, etPhone, etPassword;
+    EditText etName, etRollNumber, etEmail, etPassword;
     Button btnRegister;
     TextView tvLogin;
 
-    RadioButton radioUser, radioDriver;
+    RadioButton rbUser, rbDriver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Bind views
         etName = findViewById(R.id.etName);
+        etRollNumber = findViewById(R.id.etRollNumber); // 🔥 new
         etEmail = findViewById(R.id.etEmail);
-        etPhone = findViewById(R.id.etPhone); // optional (not sent)
         etPassword = findViewById(R.id.etPassword);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
 
-        radioUser = findViewById(R.id.radioUser);
-        radioDriver = findViewById(R.id.radioDriver);
+        rbUser = findViewById(R.id.radioUser);
+        rbDriver = findViewById(R.id.radioDriver);
 
         btnRegister.setOnClickListener(v -> registerUser());
         tvLogin.setOnClickListener(v -> finish());
@@ -49,20 +50,20 @@ public class RegisterActivity extends AppCompatActivity {
     private void registerUser() {
 
         String name = etName.getText().toString().trim();
+        String rollNumber = etRollNumber.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
+        // Role selection
         String role;
-
-        if (radioDriver.isChecked()) {
+        if (rbDriver.isChecked()) {
             role = "DRIVER";
         } else {
-            role = "USER"; // default
+            role = "USER";
         }
 
-
-
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        // Validation
+        if (name.isEmpty() || rollNumber.isEmpty() || email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this,
                     "Please fill all required fields",
                     Toast.LENGTH_SHORT).show();
@@ -73,10 +74,10 @@ public class RegisterActivity extends AppCompatActivity {
 
         Map<String, String> body = new HashMap<>();
         body.put("name", name);
+        body.put("roll_number", rollNumber); // 🔥 important
         body.put("email", email);
         body.put("password", password);
         body.put("role", role);
-
 
         api.register(body).enqueue(new Callback<Map<String, String>>() {
 
@@ -88,10 +89,11 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this,
                             "Registration successful",
                             Toast.LENGTH_SHORT).show();
-                    finish(); // go to login
+
+                    finish(); // back to login
                 } else {
                     Toast.makeText(RegisterActivity.this,
-                            "Email already registered",
+                            "Email or Roll Number already registered",
                             Toast.LENGTH_SHORT).show();
                 }
             }

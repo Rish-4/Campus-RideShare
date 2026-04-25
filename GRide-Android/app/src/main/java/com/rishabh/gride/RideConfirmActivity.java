@@ -110,13 +110,13 @@ public class RideConfirmActivity extends AppCompatActivity {
                                 int rideId = ((Double) response.body().get("rideId")).intValue();
 
                                 Toast.makeText(RideConfirmActivity.this,
-                                        "Ride booked successfully",
+                                        "Finding your driver...",
                                         Toast.LENGTH_SHORT).show();
 
                                 //  PASS rideId to PaymentActivity
                                 Intent intent = new Intent(
                                         RideConfirmActivity.this,
-                                        PaymentActivity.class
+                                        WaitingActivity.class
                                 );
                                 intent.putExtra("fare", fare);
                                 intent.putExtra("rideId", rideId);
