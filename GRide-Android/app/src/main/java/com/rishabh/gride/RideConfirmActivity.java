@@ -97,7 +97,7 @@ public class RideConfirmActivity extends AppCompatActivity {
             body.put("fare", fare);
 
 
-            apiService.createRide(token, body)
+            apiService.createRide("Bearer " + token, body)
                     .enqueue(new Callback<Map<String, Object>>() {
 
                         @Override

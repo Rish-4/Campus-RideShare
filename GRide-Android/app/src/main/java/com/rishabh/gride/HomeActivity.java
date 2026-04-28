@@ -256,7 +256,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         ApiService api = ApiClient.getClient().create(ApiService.class);
 
         api.getRoute(
-                token,
+                "Bearer " + token,
                 pickup.latitude,
                 pickup.longitude,
                 drop.latitude,
@@ -271,11 +271,11 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.d("ROUTE_DEBUG", "Backend response received: " + response.body());
                 if (!response.isSuccessful() || response.body() == null) return;
 
-                // ✅ Get encoded polyline string from backend
+                //  Get encoded polyline string from backend
                 String encodedPolyline =
                         response.body().get("polyline").toString();
 
-                // ✅ Decode polyline into LatLng points
+                //  Decode polyline into LatLng points
                 List<LatLng> points =
                         PolyUtil.decode(encodedPolyline);
 

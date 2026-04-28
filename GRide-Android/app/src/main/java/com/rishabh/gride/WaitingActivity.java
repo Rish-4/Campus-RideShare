@@ -32,20 +32,17 @@ public class WaitingActivity extends AppCompatActivity {
     }
     private void checkRideStatus() {
 
-        android.util.Log.d("WAIT", "Checking status... RideId = " + rideId);
         String token = getSharedPreferences("AUTH", MODE_PRIVATE)
                 .getString("TOKEN", null);
 
         ApiService api = ApiClient.getClient().create(ApiService.class);
 
-        api.getRideStatus(token, rideId).enqueue(new Callback<Map<String, Object>>() {
+        api.getRideStatus("Bearer " + token, rideId).enqueue(new Callback<Map<String, Object>>() {
 
             @Override
             public void onResponse(Call<Map<String, Object>> call,
                                    Response<Map<String, Object>> response) {
 
-                android.util.Log.d("WAIT", "Code = " + response.code());
-                android.util.Log.d("WAIT", "Body = " + response.body());
                 if (response.isSuccessful() && response.body() != null) {
 
                     String status = response.body().get("status").toString();
@@ -73,7 +70,6 @@ public class WaitingActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Map<String, Object>> call, Throwable t) {
-                android.util.Log.e("WAIT", "Error = " + t.getMessage());
                 t.printStackTrace();
             }
         });

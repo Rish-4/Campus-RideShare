@@ -108,7 +108,7 @@ exports.updateRideStatus = (req, res) => {
   const rideId = req.params.id;
   const { status } = req.body;
 
-  const allowedStatuses = ["PAID", "COMPLETED", "CANCELLED"];
+  const allowedStatuses = ["REQUESTED", "ACCEPTED", "ARRIVED", "PAID", "COMPLETED", "CANCELLED"];
 
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({
@@ -119,10 +119,10 @@ exports.updateRideStatus = (req, res) => {
   const sql = `
     UPDATE rides
     SET status = ?
-    WHERE id = ? AND user_id = ?
+    WHERE id = ?
   `;
 
-  db.query(sql, [status, rideId, userId], (err, result) => {
+  db.query(sql, [status, rideId], (err, result) => {
     if (err) return res.status(500).json(err);
 
     if (result.affectedRows === 0) {
@@ -137,18 +137,31 @@ exports.updateRideStatus = (req, res) => {
     });
   });
 };
+
 exports.getAvailableRides = (req, res) => {
 
   const sql = `
-    SELECT 
-      id, pickup_address,
-      drop_address, distance_km,
-      fare, created_at
-    FROM rides
-    WHERE status = 'REQUESTED'
-      AND driver_id IS NULL
-    ORDER BY created_at ASC
-  `;
+  SELECT 
+    id,
+    pickup_address,
+    drop_address,
+    distance_km,
+    fare,
+    created_at,
+
+    pickup_lat,
+    pickup_lng,
+
+    drop_lat,
+    drop_lng
+
+  FROM rides
+
+  WHERE status = 'REQUESTED'
+    AND driver_id IS NULL
+
+  ORDER BY created_at ASC
+`;
 
   db.query(sql, (err, rows) => {
     if (err) {

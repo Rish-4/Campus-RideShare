@@ -46,13 +46,13 @@ public interface ApiService {
     Call<Map<String, String>> register(@Body Map<String, String> body);
 
     @GET("api/rides/available")
-    Call<List<Map<String, Object>>> getAvailableRides(
-            @Header("authorization") String token
+    Call<List<Ride>> getAvailableRides(
+            @Header("Authorization") String token
     );
 
-    @PATCH("api/rides/{id}/accept")
+    @PATCH("api/rides/accept/{id}")
     Call<Map<String, String>> acceptRide(
-            @Header("authorization") String token,
+            @Header("Authorization") String token,
             @Path("id") int rideId
     );
 

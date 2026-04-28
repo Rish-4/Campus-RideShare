@@ -1,10 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".DriverRideActivity">
+    android:layout_height="match_parent">
+
+    <!-- GOOGLE MAP -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        tools:context=".DriverRideActivity"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- NAVIGATION BUTTON -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnNavigate"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="110dp"
+        android:src="@drawable/ic_navigation"
+        android:contentDescription="Start Navigation"
+
+        android:backgroundTint="@android:color/transparent"
+
+        app:backgroundTint="@android:color/transparent"
+        app:borderWidth="0dp"
+        app:elevation="0dp"
+        app:rippleColor="@android:color/transparent"
+        app:tint="#1A73E8"
+
+        app:maxImageSize="50dp"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- DISTANCE TEXT -->
+    <TextView
+        android:id="@+id/tvDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="0.0 km away"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+
+        android:background="#AAFFFFFF"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="6dp"
+
+        android:layout_marginStart="26dp"
+
+        app:layout_constraintStart_toEndOf="@id/btnNavigate"
+        app:layout_constraintTop_toTopOf="@id/btnNavigate"
+        app:layout_constraintBottom_toBottomOf="@id/btnNavigate"/>
+
+    <!-- ARRIVED BUTTON -->
+    <Button
+        android:id="@+id/btnArrived"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+
+        android:text="Reach pickup first"
+        android:textAllCaps="false"
+        android:textSize="18sp"
+
+        android:layout_margin="20dp"
+        android:padding="14dp"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

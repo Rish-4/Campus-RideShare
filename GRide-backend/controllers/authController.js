@@ -128,11 +128,15 @@ exports.login = (req, res) => {
     }
 
     // Generate token
-    const token = jwt.sign(
-      { id: user.id, roll_number: user.roll_number },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+const token = jwt.sign(
+  {
+    id: user.id,
+    roll_number: user.roll_number,
+    role: user.role
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "1d" }
+);
 
     // Success response
     res.json({

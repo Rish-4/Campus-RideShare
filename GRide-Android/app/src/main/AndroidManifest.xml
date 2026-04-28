@@ -16,6 +16,9 @@
         android:theme="@style/Theme.GRide"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".DriverRideActivity"
+            android:exported="false" />
+        <activity
             android:name=".CompletionActivity"
             android:exported="false" />
         <activity
@@ -23,9 +26,6 @@
             android:exported="false" />
         <activity
             android:name=".WaitingActivity"
-            android:exported="false" />
-        <activity
-            android:name=".AvailableRidesActivity"
             android:exported="false" />
         <activity
             android:name=".DriverHomeActivity"
@@ -45,6 +45,7 @@
         <activity
             android:name=".RideConfirmActivity"
             android:exported="false" />
+
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -61,10 +62,10 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
