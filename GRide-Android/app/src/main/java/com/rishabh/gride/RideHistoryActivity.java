@@ -1,6 +1,8 @@
 package com.rishabh.gride;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,12 +22,16 @@ import retrofit2.Response;
 
 public class RideHistoryActivity extends AppCompatActivity {
 
+    private RecyclerView rv;
+    private TextView tvEmpty;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ride_history);
 
-        RecyclerView rv = findViewById(R.id.rvRides);
+        rv = findViewById(R.id.rvRides);
+
         rv.setLayoutManager(new LinearLayoutManager(this));
 
         String token = getSharedPreferences("AUTH", MODE_PRIVATE)
@@ -37,23 +43,53 @@ public class RideHistoryActivity extends AppCompatActivity {
             return;
         }
 
-        ApiService api = ApiClient.getClient().create(ApiService.class);
-        api.getMyRides(token).enqueue(new Callback<List<Ride>>() {
-            @Override
-            public void onResponse(Call<List<Ride>> call, Response<List<Ride>> res) {
-                if (res.isSuccessful() && res.body() != null) {
-                    rv.setAdapter(new RideAdapter(res.body()));
-                } else {
-                    Toast.makeText(RideHistoryActivity.this,
-                            "Failed to load rides", Toast.LENGTH_SHORT).show();
-                }
-            }
+        loadRideHistory(token);
+    }
 
-            @Override
-            public void onFailure(Call<List<Ride>> call, Throwable t) {
-                Toast.makeText(RideHistoryActivity.this,
-                        t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void loadRideHistory(String token) {
+
+        ApiService api = ApiClient.getClient().create(ApiService.class);
+
+        api.getMyRides("Bearer " + token)
+                .enqueue(new Callback<List<Ride>>() {
+
+                    @Override
+                    public void onResponse(Call<List<Ride>> call,
+                                           Response<List<Ride>> res) {
+
+                        if (res.isSuccessful() && res.body() != null) {
+
+                            List<Ride> rides = res.body();
+
+                            if (rides.isEmpty()) {
+                                showEmptyState();
+                            } else {
+                                rv.setVisibility(View.VISIBLE);
+
+
+                                // 👇 uses adapter WITHOUT accept button
+                                rv.setAdapter(new RideAdapter(rides, null));
+                            }
+
+                        } else {
+                            Toast.makeText(RideHistoryActivity.this,
+                                    "Failed to load rides",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Ride>> call, Throwable t) {
+                        Toast.makeText(RideHistoryActivity.this,
+                                "Error: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void showEmptyState() {
+        rv.setVisibility(View.GONE);
+        tvEmpty.setVisibility(View.VISIBLE);
+        tvEmpty.setText("No ride history yet");
     }
 }
